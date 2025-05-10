@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Service
@@ -44,4 +44,9 @@ public class StockServiceImpl implements StockService {
         }
         stockRepository.deleteById(id);
     }
+
+    public List<Stock> getAllStocks() {
+        return stockRepository.findAll();
+    }
+
 }

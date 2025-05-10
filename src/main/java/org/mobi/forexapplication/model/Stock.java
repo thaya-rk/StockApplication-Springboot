@@ -32,7 +32,7 @@ public class Stock {
     @Column(name = "exchange")
     private String exchange;        // Stock-Exchange
 
-    @Size(max = 255)
+    @Size(max = 250)
     @Column(name = "sector")
     private String sector;          // Sector of the stock
 

@@ -22,6 +22,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin").hasAuthority("ADMIN")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasAuthority("USER")
+                        .requestMatchers("/api/watchlist/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
