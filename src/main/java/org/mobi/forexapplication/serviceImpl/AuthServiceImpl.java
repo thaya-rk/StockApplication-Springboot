@@ -1,11 +1,10 @@
-package org.mobi.forexapplication.service.impl;
+package org.mobi.forexapplication.serviceImpl;
 
 import jakarta.servlet.http.HttpSession;
 import org.mobi.forexapplication.model.User;
 import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.endpoint.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

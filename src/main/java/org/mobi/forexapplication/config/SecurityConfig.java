@@ -19,16 +19,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin").hasAuthority("ADMIN")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasAuthority("USER")
-                        .requestMatchers("/api/watchlist/**").permitAll()
+                        .requestMatchers("/api/watchlist/**").hasAuthority("USER")
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable())
-                .httpBasic(Customizer.withDefaults())
+                .formLogin(form -> form.disable())  //Disable default form based login
+                .httpBasic(httpBasic -> httpBasic.disable()) // Disable Basic Auth
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) //manage spring jsession  
                 );
 
         return http.build();

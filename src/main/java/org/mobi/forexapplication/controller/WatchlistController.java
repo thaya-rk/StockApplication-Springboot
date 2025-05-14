@@ -21,4 +21,5 @@ public class WatchlistController {
         List<Stock> allStocks = stockService.getAllStocks();
         return ResponseEntity.ok(allStocks);
     }
+
 }

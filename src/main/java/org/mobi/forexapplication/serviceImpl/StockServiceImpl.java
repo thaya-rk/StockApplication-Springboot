@@ -1,4 +1,4 @@
-package org.mobi.forexapplication.service.impl;
+package org.mobi.forexapplication.serviceImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.mobi.forexapplication.model.Stock;
