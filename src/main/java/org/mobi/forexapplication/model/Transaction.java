@@ -1,7 +1,10 @@
 package org.mobi.forexapplication.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,10 +20,10 @@ public class Transaction {
     private User user;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "stock_id", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = true)
     private Stock stock;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer quantity;
 
     @Column(name = "total_amt", nullable = false, precision = 14, scale = 2)
@@ -32,8 +35,13 @@ public class Transaction {
     @Column(nullable = false, length = 10)
     private String type; // BUY or SELL
 
+
     @Column(nullable = false, length = 10)
     private String status; // SUCCESS, FAILED, PENDING
+
+    @CreationTimestamp
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
     public Transaction(User user, Stock stock, String type, Integer quantity, BigDecimal price) {
         this.user = user;
@@ -45,10 +53,17 @@ public class Transaction {
         this.transactionDate = LocalDateTime.now();
     }
 
+    public Transaction(User user, String type, BigDecimal amount, LocalDateTime transactionDate) {
+        this.user = user;
+        this.type = type;
+        this.totalAmount = amount;
+        this.status = "SUCCESS";
+        this.transactionDate = transactionDate;
+    }
+
     public Transaction() {
 
     }
-
 
     @PrePersist
     public void onCreate() {
