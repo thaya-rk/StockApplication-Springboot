@@ -1,11 +1,12 @@
 package org.mobi.forexapplication.serviceImpl;
 
-import jakarta.servlet.http.HttpSession;
+import org.mobi.forexapplication.dto.AuthResponse;
+import org.mobi.forexapplication.dto.LoginDTO;
 import org.mobi.forexapplication.model.User;
 import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.AuthService;
+import org.mobi.forexapplication.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,34 +21,45 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public User register(User user) {
-        // hash password before saving
         user.setPassword(encoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
     @Override
-    public User login(String usernameOrEmail, String password) {
-        // Check by username or email
-        Optional<User> userOpt = userRepository.findByUsername(usernameOrEmail);
+    public AuthResponse login(LoginDTO loginDTO) {
+        Optional<User> userOpt = userRepository.findByUsername(loginDTO.getUsernameOrEmail());
         if (userOpt.isEmpty()) {
-            userOpt = userRepository.findByEmail(usernameOrEmail);
+            userOpt = userRepository.findByEmail(loginDTO.getUsernameOrEmail());
         }
 
-        if (userOpt.isPresent() && encoder.matches(password, userOpt.get().getPassword())) {
-            return userOpt.get();  // Return the authenticated user object
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (encoder.matches(loginDTO.getPassword(), user.getPassword())) {
+                String token = jwtUtil.generateToken(
+                        user.getUsername(),
+                        user.getUserId(),
+                        jwtUtil.getAuthoritiesFromRole(user.getRole())
+                );
+                return new AuthResponse("Login successful", token, user.getUsername());
+            }
         }
+
         throw new RuntimeException("Invalid credentials");
     }
 
     @Override
-    public void logout(HttpSession session) {
-        if(session.getAttribute("user")!=null){
-            session.invalidate();
-            SecurityContextHolder.clearContext();
-        }else {
-            throw new RuntimeException("No user loggged in");
-        }
+    public void logout() {
+        // No logic needed for stateless JWT
+        throw new UnsupportedOperationException("Logout is handled client-side by clearing the JWT token.");
+    }
+
+    @Override
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Service
 public class StockServiceImpl implements StockService {
 
@@ -48,5 +47,4 @@ public class StockServiceImpl implements StockService {
     public List<Stock> getAllStocks() {
         return stockRepository.findAll();
     }
-
 }

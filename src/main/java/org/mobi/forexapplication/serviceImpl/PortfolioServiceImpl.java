@@ -1,6 +1,5 @@
 package org.mobi.forexapplication.serviceImpl;
 
-import jakarta.servlet.http.HttpSession;
 import org.mobi.forexapplication.dto.BuySellRequest;
 import org.mobi.forexapplication.dto.HoldingResponse;
 import org.mobi.forexapplication.model.Holdings;
@@ -14,11 +13,14 @@ import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.mobi.forexapplication.security.JwtUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
@@ -35,40 +37,42 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Autowired
     private UserRepository userRepository;
 
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    }
+
     @Override
-    public void buyStock(HttpSession session,BuySellRequest request) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        Long userId = user.getUserId();
+    public void buyStock(BuySellRequest request) {
+
+        Long userId = request.getUserId();
+        User user = getUserById(userId);
+
+
         Stock stock = stockRepository.findById(request.getStockId())
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
-
-        user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         BigDecimal quantity = BigDecimal.valueOf(request.getQuantity());
         BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
         BigDecimal totalPrice = currentPrice.multiply(quantity);
 
         if (user.getDematBalance().compareTo(totalPrice) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new RuntimeException("Insufficient balance to buy stock");
         }
 
-        // Deduct balance and save user
+        // Deduct balance
         user.setDematBalance(user.getDematBalance().subtract(totalPrice));
         userRepository.save(user);
 
-        Holdings holdings = holdingRepository.findByUser_UserIdAndStock_StockId(userId, request.getStockId()).orElse(null);
+        Holdings holdings = holdingRepository.findByUser_UserIdAndStock_StockId(user.getUserId(), stock.getStockId())
+                .orElse(null);
 
         if (holdings != null) {
             BigDecimal existingQty = BigDecimal.valueOf(holdings.getQuantity());
-            BigDecimal newQty = quantity;
-            BigDecimal totalQty = existingQty.add(newQty);
+            BigDecimal totalQty = existingQty.add(quantity);
 
             BigDecimal existingTotal = holdings.getAvgBuyPrice().multiply(existingQty);
-            BigDecimal newTotal = currentPrice.multiply(newQty);
+            BigDecimal newTotal = currentPrice.multiply(quantity);
 
             BigDecimal newAvgPrice = existingTotal.add(newTotal).divide(totalQty, 2, RoundingMode.HALF_EVEN);
 
@@ -84,25 +88,21 @@ public class PortfolioServiceImpl implements PortfolioService {
             holdingRepository.save(newHolding);
         }
 
-        // Save transaction
+        // Record transaction
         Transaction txn = new Transaction(user, stock, "BUY", quantity.intValue(), currentPrice);
         transactionRepository.save(txn);
     }
 
     @Override
-    public void sellStock(HttpSession session,BuySellRequest request) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        Long userId = user.getUserId();        if (userId == null) {
-            throw new RuntimeException("User not logged in");
-        }
-        Holdings holdings = holdingRepository.findByUser_UserIdAndStock_StockId(userId, request.getStockId())
-                .orElseThrow(() -> new RuntimeException("No holdings found"));
+    public void sellStock(BuySellRequest request) {
+        Long userId = request.getUserId();
+        User user = getUserById(userId);
+
+
+        Holdings holdings = holdingRepository.findByUser_UserIdAndStock_StockId(user.getUserId(), request.getStockId())
+                .orElseThrow(() -> new RuntimeException("No holdings found for the stock"));
 
         int sellQty = request.getQuantity();
-
         if (holdings.getQuantity() < sellQty) {
             throw new RuntimeException("Not enough quantity to sell");
         }
@@ -110,53 +110,40 @@ public class PortfolioServiceImpl implements PortfolioService {
         Stock stock = stockRepository.findById(request.getStockId())
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
-         user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        BigDecimal quantity = BigDecimal.valueOf(sellQty);
         BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
-        BigDecimal totalSellPrice = currentPrice.multiply(quantity);
+        BigDecimal totalPrice = currentPrice.multiply(BigDecimal.valueOf(sellQty));
 
-        // Add funds back to user
-        user.setDematBalance(user.getDematBalance().add(totalSellPrice));
+        // Update holdings
+        holdings.setQuantity(holdings.getQuantity() - sellQty);
+        holdingRepository.save(holdings);
+
+        // Add balance to user
+        user.setDematBalance(user.getDematBalance().add(totalPrice));
         userRepository.save(user);
 
-        int remainingQty = holdings.getQuantity() - sellQty;
-
-        if (remainingQty == 0) {
-            holdingRepository.delete(holdings);
-        } else {
-            holdings.setQuantity(remainingQty);
-            holdingRepository.save(holdings);
-        }
-
-        // Save transaction
+        // Record transaction
         Transaction txn = new Transaction(user, stock, "SELL", sellQty, currentPrice);
         transactionRepository.save(txn);
     }
 
     @Override
     public List<HoldingResponse> getHoldingsByUserId(Long userId) {
-        List<Holdings> holdings = holdingRepository.findByUser_UserId(userId);
-        List<HoldingResponse> responses = new ArrayList<>();
-
-        for (Holdings h : holdings) {
-            BigDecimal currentPrice = BigDecimal.valueOf(h.getStock().getStockPrice());
-            BigDecimal currentValue = currentPrice.multiply(BigDecimal.valueOf(h.getQuantity()));
-
-            responses.add(new HoldingResponse(
-                    h.getStock().getCompanyName(),
-                    h.getQuantity(),
-                    h.getAvgBuyPrice(),
-                    currentPrice,
-                    currentValue
-            ));
-        }
-
-        return responses;
+        return holdingRepository.findByUser_UserId(userId)
+                .stream()
+                .map(holding -> {
+                    Stock stock = holding.getStock();
+                    BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
+                    BigDecimal currentValue = currentPrice.multiply(BigDecimal.valueOf(holding.getQuantity()));
+                    return new HoldingResponse(
+                            stock.getCompanyName(),
+                            holding.getQuantity(),
+                            holding.getAvgBuyPrice(),
+                            currentPrice,
+                            currentValue
+                    );
+                })
+                .collect(Collectors.toList());
     }
-
-
 
 
 }
