@@ -27,9 +27,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/auth/user/**").hasAuthority("USER")
-                        .requestMatchers("/api/watchlist/**").hasAuthority("USER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/user/**").hasRole("USER")
+                        .requestMatchers("/api/watchlist/**").hasRole("USER")
+                        .requestMatchers("/api/portfolio/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())  //Disable default form based login
@@ -48,6 +49,8 @@ public class SecurityConfig {
     {
         return new BCryptPasswordEncoder();
     }
+
+
 
 
 }

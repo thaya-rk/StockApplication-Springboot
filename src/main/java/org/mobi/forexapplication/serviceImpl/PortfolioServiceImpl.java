@@ -1,5 +1,6 @@
 package org.mobi.forexapplication.serviceImpl;
 
+import jakarta.transaction.Transactional;
 import org.mobi.forexapplication.dto.BuySellRequest;
 import org.mobi.forexapplication.dto.HoldingResponse;
 import org.mobi.forexapplication.model.Holdings;
@@ -43,6 +44,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional
     public void buyStock(BuySellRequest request) {
 
         Long userId = request.getUserId();
@@ -94,6 +96,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional
     public void sellStock(BuySellRequest request) {
         Long userId = request.getUserId();
         User user = getUserById(userId);
