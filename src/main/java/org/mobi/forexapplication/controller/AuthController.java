@@ -1,5 +1,7 @@
 package org.mobi.forexapplication.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.mobi.forexapplication.dto.ApiResponse;
 import org.mobi.forexapplication.dto.AuthResponse;
 import org.mobi.forexapplication.dto.LoginDTO;
@@ -23,6 +25,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody User user) {
         try {
+
             User savedUser = authService.register(user);
             return ResponseEntity.ok(new ApiResponse<>(
                     "User registered successfully",
@@ -37,10 +40,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         try {
-            AuthResponse response = authService.login(loginDTO);
-            return ResponseEntity.ok(new ApiResponse<>("Login successful", response));
+            AuthResponse authResponse = authService.login(loginDTO);
+            Cookie jwtCookie = new Cookie("token", authResponse.getToken());
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(24 * 60 * 60);
+
+            response.addCookie(jwtCookie);
+
+            return ResponseEntity.ok(new ApiResponse<>("Login successful", authResponse));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     new ApiResponse<>("Login failed: " + e.getMessage(), null)
@@ -49,10 +59,15 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<String>> logout() {
-        return ResponseEntity.ok(new ApiResponse<>(
-                "Logout is handled client-side. Clear the JWT token from storage.", null
-        ));
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletResponse response) {
+
+        Cookie jwtCookie = new Cookie("token", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
+        response.addCookie(jwtCookie);
+        return ResponseEntity.ok(new ApiResponse<>("Logged out successfully", null));
+
     }
 
     @GetMapping("/me")

@@ -148,5 +148,12 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Long getUserIdByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        return user.getUserId();
+    }
+
 
 }

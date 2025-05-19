@@ -9,4 +9,5 @@ public interface PortfolioService {
     void buyStock(BuySellRequest request);
     void sellStock(BuySellRequest request);
     List<HoldingResponse> getHoldingsByUserId(Long userId);
+    Long getUserIdByUsername(String username);
 }

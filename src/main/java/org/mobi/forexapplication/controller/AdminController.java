@@ -21,7 +21,7 @@ public class AdminController {
     private StockService stockService;
 
     @GetMapping()
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> adminDashboard() {
         System.out.println("url hit");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -48,21 +48,21 @@ public class AdminController {
 
 
     @PostMapping("/stocks")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Stock> addStock(@RequestBody Stock stock) {
         Stock createdStock = stockService.addStock(stock);
         return new ResponseEntity<>(createdStock, HttpStatus.CREATED);
     }
 
     @PutMapping("/stocks")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Stock> updateStockPrice(@RequestBody StockUpdateRequest updateRequest) {
         Stock updatedStock = stockService.updateStockPrice(updateRequest.getId(), updateRequest.getNewPrice());
         return new ResponseEntity<>(updatedStock, HttpStatus.OK);
     }
 
     @DeleteMapping("/stocks")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStock(@RequestBody StockDeleteRequest request) {
         stockService.deleteStock(request.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

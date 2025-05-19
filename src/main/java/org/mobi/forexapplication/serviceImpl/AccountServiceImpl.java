@@ -24,8 +24,6 @@ public class AccountServiceImpl  implements AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-
-
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -35,6 +33,7 @@ public class AccountServiceImpl  implements AccountService {
         } else {
             username = principal.toString();
         }
+        System.out.println(username);
 
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));

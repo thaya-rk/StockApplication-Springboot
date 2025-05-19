@@ -1,6 +1,5 @@
 package org.mobi.forexapplication.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.mobi.forexapplication.dto.BalanceUpdateRequest;
 import org.mobi.forexapplication.model.Transaction;
 import org.mobi.forexapplication.model.User;
@@ -19,7 +18,7 @@ public class AccountController {
     private AccountService accountService;
 
     @GetMapping("/balance")
-    public ResponseEntity<BigDecimal> getBalance(HttpSession session){
+    public ResponseEntity<BigDecimal> getBalance(){
         BigDecimal balance=accountService.getBalance();
         return ResponseEntity.ok(balance);
     }

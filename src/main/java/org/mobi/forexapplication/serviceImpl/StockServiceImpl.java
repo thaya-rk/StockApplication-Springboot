@@ -17,7 +17,7 @@ public class StockServiceImpl implements StockService {
     @Autowired
     private StockRepository stockRepository;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Stock addStock(Stock stock) {
         stock.setCreatedAt(LocalDateTime.now());
@@ -25,7 +25,7 @@ public class StockServiceImpl implements StockService {
         return stockRepository.save(stock);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Stock updateStockPrice(Long id, Double newPrice) {
         Stock stock = stockRepository.findById(id)
@@ -35,7 +35,7 @@ public class StockServiceImpl implements StockService {
         return stockRepository.save(stock);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void deleteStock(Long id) {
         if (!stockRepository.existsById(id)) {
@@ -44,7 +44,9 @@ public class StockServiceImpl implements StockService {
         stockRepository.deleteById(id);
     }
 
-    public List<Stock> getAllStocks() {
+    @Override
+    public List<Stock> getAllStocks()
+    {
         return stockRepository.findAll();
     }
 }
