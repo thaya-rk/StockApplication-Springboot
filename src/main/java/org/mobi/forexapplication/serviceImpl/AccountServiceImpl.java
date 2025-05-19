@@ -28,6 +28,7 @@ public class AccountServiceImpl  implements AccountService {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username;
+        //Using singleton here to get the existing instance without creating new one
         if (principal instanceof UserDetails) {
             username = ((UserDetails) principal).getUsername();
         } else {
