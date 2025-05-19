@@ -79,7 +79,9 @@ public class AuthController {
                 String username = authentication.getName();
 
                 return authService.getUserByUsername(username)
-                        .map(user -> ResponseEntity.ok(new ApiResponse<>("User info", new UserDTO(user.getUsername(), user.getEmail()))))
+                        .map(user -> ResponseEntity.ok(new ApiResponse<>
+                                ("User info",
+                                        new UserDTO(user.getUsername(), user.getEmail(),user.getRole()))))
                         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .body(new ApiResponse<>("User not found", null)));
             }
