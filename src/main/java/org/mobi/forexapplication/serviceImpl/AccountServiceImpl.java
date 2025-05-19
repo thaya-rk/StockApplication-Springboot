@@ -1,6 +1,4 @@
 package org.mobi.forexapplication.serviceImpl;
-
-import jakarta.servlet.http.HttpSession;
 import org.mobi.forexapplication.model.Transaction;
 import org.mobi.forexapplication.model.User;
 import org.mobi.forexapplication.repository.TransactionRepository;

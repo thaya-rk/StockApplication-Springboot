@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/account")
@@ -18,20 +20,20 @@ public class AccountController {
     private AccountService accountService;
 
     @GetMapping("/balance")
-    public ResponseEntity<BigDecimal> getBalance(){
-        BigDecimal balance=accountService.getBalance();
+    public ResponseEntity<BigDecimal> getBalance() {
+        BigDecimal balance = accountService.getBalance();
         return ResponseEntity.ok(balance);
     }
 
     @GetMapping("/ledger")
-    public ResponseEntity<List<Transaction>> getLedger(){
-        List<Transaction> ledger=accountService.getLedger();
+    public ResponseEntity<List<Transaction>> getLedger() {
+        List<Transaction> ledger = accountService.getLedger();
         return ResponseEntity.ok(ledger);
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<User> getProfile(){
-        User user=accountService.getProfile();
+    public ResponseEntity<User> getProfile() {
+        User user = accountService.getProfile();
         return ResponseEntity.ok(user);
     }
 
@@ -42,17 +44,21 @@ public class AccountController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<String> deposit(@RequestBody BalanceUpdateRequest request){
+    public ResponseEntity<Map<String, String>> deposit(@RequestBody BalanceUpdateRequest request) {
         accountService.deposit(request.getAmount());
-        return ResponseEntity.ok("Deposit Successful");
+        Map<String, String> response = Collections.singletonMap("message", "Deposit Successful");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<String> withdraw(@RequestBody BalanceUpdateRequest request){
-        boolean success=accountService.withdraw(request.getAmount());
-        if(success){
-            return ResponseEntity.ok("withdraw Successful");
+    public ResponseEntity<Map<String, String>> withdraw(@RequestBody BalanceUpdateRequest request) {
+        boolean success = accountService.withdraw(request.getAmount());
+        if (success) {
+            Map<String, String> response = Collections.singletonMap("message", "Withdraw Successful");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, String> response = Collections.singletonMap("error", "Insufficient balance");
+            return ResponseEntity.badRequest().body(response);
         }
-        else return ResponseEntity.badRequest().body("Insufficient balance");
     }
 }
