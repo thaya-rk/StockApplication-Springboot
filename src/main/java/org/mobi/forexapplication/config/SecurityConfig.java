@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasRole("USER")
                         .requestMatchers("/api/watchlist/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/portfolio/**").hasRole("USER")
+                           .requestMatchers("/api/portfolio/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())  //Disable default form based login
