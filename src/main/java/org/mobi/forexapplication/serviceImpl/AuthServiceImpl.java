@@ -48,7 +48,6 @@ public class AuthServiceImpl implements AuthService {
                 return new AuthResponse("Login successful", token, user.getUsername());
             }
         }
-
         throw new RuntimeException("Invalid credentials");
     }
 
