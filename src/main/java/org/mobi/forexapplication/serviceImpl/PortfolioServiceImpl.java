@@ -265,5 +265,25 @@ public class PortfolioServiceImpl implements PortfolioService {
         );
     }
 
+    @Override
+    public TransactionChargesDTO calculateTransactionCharges(Long userId, Long stockId, int quantity) {
+        Stock stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+
+        BigDecimal stockPrice = BigDecimal.valueOf(stock.getStockPrice());
+        BigDecimal transactionValue = stockPrice.multiply(BigDecimal.valueOf(quantity));
+
+        BigDecimal brokerage = transactionValue.multiply(new BigDecimal("0.005")); // 0.5%
+        BigDecimal stampDuty = transactionValue.multiply(new BigDecimal("0.001")); // 0.1%
+        BigDecimal transactionTax = transactionValue.multiply(new BigDecimal("0.002")); // 0.2%
+        BigDecimal sebiCharges = transactionValue.multiply(new BigDecimal("0.0001")); // 0.01%
+        BigDecimal gst = (brokerage.add(sebiCharges)).multiply(new BigDecimal("0.18")); // 18% on brokerage + sebi
+
+        BigDecimal totalCharges = brokerage.add(stampDuty).add(transactionTax).add(sebiCharges).add(gst);
+
+        return new TransactionChargesDTO(brokerage, stampDuty, transactionTax, sebiCharges, gst, totalCharges);
+    }
+
+
 
 }

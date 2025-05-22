@@ -4,6 +4,8 @@ import org.mobi.forexapplication.dto.BuySellRequest;
 import org.mobi.forexapplication.dto.HoldingResponse;
 import org.mobi.forexapplication.dto.PortfolioSummaryDTO;
 import org.mobi.forexapplication.dto.StockStatsDTO;
+import org.mobi.forexapplication.dto.TransactionChargesDTO;
+
 
 import java.util.List;
 
@@ -15,4 +17,6 @@ public interface PortfolioService {
 
     PortfolioSummaryDTO getPortfolioSummary(Long userId);
     StockStatsDTO getStockStats(Long userId, Long stockId);
+    TransactionChargesDTO calculateTransactionCharges(Long userId, Long stockId, int quantity);
+
 }

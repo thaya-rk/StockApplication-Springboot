@@ -1,4 +1,5 @@
 package org.mobi.forexapplication.serviceImpl;
+import org.mobi.forexapplication.Exception.GlobalCustomException;
 import org.mobi.forexapplication.model.Transaction;
 import org.mobi.forexapplication.model.User;
 import org.mobi.forexapplication.repository.TransactionRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AccountServiceImpl  implements AccountService {
@@ -22,7 +24,7 @@ public class AccountServiceImpl  implements AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private User getCurrentUser() {
+    private  User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         String username;
@@ -53,7 +55,21 @@ public class AccountServiceImpl  implements AccountService {
 
     @Override
     public User getProfile() {
-        return getCurrentUser();
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String Name;
+
+        assert principal instanceof UserDetails;
+        Name = ((UserDetails) principal).getUsername();
+
+        if((Objects.isNull(Name))){
+            System.out.println("I came Hreeeeeee");
+            throw GlobalCustomException.UserNotFound("Name");
+        }
+        else{
+            return getCurrentUser();
+        }
     }
 
     @Override

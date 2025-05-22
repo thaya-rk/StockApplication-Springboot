@@ -7,6 +7,7 @@ import org.mobi.forexapplication.model.User;
 import java.util.Optional;
 
 public interface AuthService {
+
     User register(User user);
 
     AuthResponse login(LoginDTO loginDTO);

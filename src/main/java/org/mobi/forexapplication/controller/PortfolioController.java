@@ -1,9 +1,7 @@
 package org.mobi.forexapplication.controller;
 
-import org.mobi.forexapplication.dto.BuySellRequest;
-import org.mobi.forexapplication.dto.HoldingResponse;
-import org.mobi.forexapplication.dto.PortfolioSummaryDTO;
-import org.mobi.forexapplication.dto.StockStatsDTO;
+import org.mobi.forexapplication.Exception.GlobalCustomException;
+import org.mobi.forexapplication.dto.*;
 import org.mobi.forexapplication.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @RestController
@@ -61,11 +60,16 @@ public class PortfolioController {
         return ResponseEntity.ok(holdings);
     }
 
+    @GetMapping("/summary")
+    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary() {
+        Long userId = getCurrentUserId();
 
-    @GetMapping("/summary/{userId}")
-    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
-        PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
-        return ResponseEntity.ok(summary);
+        if (Objects.isNull(userId)) {
+            throw GlobalCustomException.UserIdNotFound(userId);
+        } else {
+            PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
+            return ResponseEntity.ok(summary);
+        }
     }
 
     @GetMapping("/stats/{stockId}")
@@ -75,6 +79,13 @@ public class PortfolioController {
         return ResponseEntity.ok(stats);
     }
 
+    @GetMapping("/charges")
+    public ResponseEntity<TransactionChargesDTO> getTransactionCharges(
+            @RequestParam Long userId,
+            @RequestParam Long stockId,
+            @RequestParam int quantity) {
 
-
+        TransactionChargesDTO charges = portfolioService.calculateTransactionCharges(userId, stockId, quantity);
+        return ResponseEntity.ok(charges);
+    }
 }

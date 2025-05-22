@@ -13,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
@@ -26,7 +28,7 @@ public class AdminController {
         System.out.println("url hit");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth == null || !auth.isAuthenticated()) {
+        if (Objects.isNull(auth) || !auth.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
         }
 

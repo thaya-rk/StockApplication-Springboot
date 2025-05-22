@@ -1,8 +1,7 @@
-package org.mobi.forexapplication.service;
+package org.mobi.forexapplication.security;
 
 import org.mobi.forexapplication.model.User;
 import org.mobi.forexapplication.repository.UserRepository;
-import org.mobi.forexapplication.security.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
