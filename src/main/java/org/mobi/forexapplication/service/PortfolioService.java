@@ -2,6 +2,8 @@ package org.mobi.forexapplication.service;
 
 import org.mobi.forexapplication.dto.BuySellRequest;
 import org.mobi.forexapplication.dto.HoldingResponse;
+import org.mobi.forexapplication.dto.PortfolioSummaryDTO;
+import org.mobi.forexapplication.dto.StockStatsDTO;
 
 import java.util.List;
 
@@ -10,4 +12,7 @@ public interface PortfolioService {
     void sellStock(BuySellRequest request);
     List<HoldingResponse> getHoldingsByUserId(Long userId);
     Long getUserIdByUsername(String username);
+
+    PortfolioSummaryDTO getPortfolioSummary(Long userId);
+    StockStatsDTO getStockStats(Long userId, Long stockId);
 }

@@ -2,8 +2,9 @@ package org.mobi.forexapplication.controller;
 
 import org.mobi.forexapplication.dto.BuySellRequest;
 import org.mobi.forexapplication.dto.HoldingResponse;
+import org.mobi.forexapplication.dto.PortfolioSummaryDTO;
+import org.mobi.forexapplication.dto.StockStatsDTO;
 import org.mobi.forexapplication.service.PortfolioService;
-import org.mobi.forexapplication.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,9 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/api/portfolio")
@@ -24,6 +22,21 @@ public class PortfolioController {
 
     @Autowired
     private PortfolioService portfolioService;
+
+    private Long getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        Object principal = auth.getPrincipal();
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            return portfolioService.getUserIdByUsername(username);
+        }
+
+        throw new RuntimeException("Invalid user principal");
+    }
 
     @PostMapping("/buy")
     public ResponseEntity<Map<String, String>> buyStock(@RequestBody BuySellRequest request) {
@@ -48,19 +61,20 @@ public class PortfolioController {
         return ResponseEntity.ok(holdings);
     }
 
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
-        }
 
-        Object principal = auth.getPrincipal();
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            // Use your UserDetailsService or repository to get userId by username
-            return portfolioService.getUserIdByUsername(username);
-        }
-
-        throw new RuntimeException("Invalid user principal");
+    @GetMapping("/summary/{userId}")
+    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
+        PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
+        return ResponseEntity.ok(summary);
     }
+
+    @GetMapping("/stats/{stockId}")
+    public ResponseEntity<StockStatsDTO> getStockStats(@PathVariable Long stockId) {
+        Long userId = getCurrentUserId();
+        StockStatsDTO stats = portfolioService.getStockStats(userId, stockId);
+        return ResponseEntity.ok(stats);
+    }
+
+
+
 }

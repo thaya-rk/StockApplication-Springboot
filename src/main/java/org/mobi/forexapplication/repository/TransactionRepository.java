@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    List<Transaction> findByUserUserId(Long userId);
+    List<Transaction> findByUser_UserId(Long userId);
     List<Transaction> findByUserOrderByTimestampDesc(User user);
 
 }

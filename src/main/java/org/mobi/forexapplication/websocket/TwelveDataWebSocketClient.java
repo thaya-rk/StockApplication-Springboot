@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TwelveDataWebSocketClient {
@@ -33,6 +36,13 @@ public class TwelveDataWebSocketClient {
                 String subscribeMessage = "{ \"action\": \"subscribe\", \"params\": { \"symbols\": \"BTC/USD\" } }";
 
                 send(subscribeMessage);
+
+                ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+                scheduler.scheduleAtFixedRate(() -> {
+                    if (this.isOpen()) {
+                        send("{\"action\": \"heartbeat\"}");
+                    }
+                }, 0, 10, TimeUnit.SECONDS);
 
             }
 
