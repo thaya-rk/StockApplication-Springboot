@@ -51,6 +51,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         BigDecimal quantity = BigDecimal.valueOf(request.getQuantity());
         BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
+
+
         BigDecimal totalPrice = currentPrice.multiply(quantity);
 
         if (user.getDematBalance().compareTo(totalPrice) < 0) {
@@ -218,7 +220,6 @@ public class PortfolioServiceImpl implements PortfolioService {
                 ? totalPL.divide(portfolioValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
-        // Example: Calculate individual charges here
         BigDecimal brokerage = calculateBrokerage(userId);        // ₹20 per transaction
         BigDecimal stampCharges = calculateStampCharges(userId);  // 0.015% on buy side
         BigDecimal transactionCharges = calculateTransactionCharges(userId); // NSE: 0.00297%
@@ -273,9 +274,15 @@ public class PortfolioServiceImpl implements PortfolioService {
         BigDecimal stockPrice = BigDecimal.valueOf(stock.getStockPrice());
         BigDecimal transactionValue = stockPrice.multiply(BigDecimal.valueOf(quantity));
 
-        BigDecimal brokerage = transactionValue.multiply(new BigDecimal("0.005")); // 0.5%
+        BigDecimal brokerage = transactionValue.multiply(new BigDecimal("0.0005")); // 0.05%
+        BigDecimal maxBrokerage = BigDecimal.valueOf(20);
+
+        if (brokerage.compareTo(maxBrokerage) > 0) {
+            brokerage = maxBrokerage;
+        }
+
         BigDecimal stampDuty = transactionValue.multiply(new BigDecimal("0.001")); // 0.1%
-        BigDecimal transactionTax = transactionValue.multiply(new BigDecimal("0.002")); // 0.2%
+        BigDecimal transactionTax = transactionValue.multiply(new BigDecimal("0.0003")); // 0.03%
         BigDecimal sebiCharges = transactionValue.multiply(new BigDecimal("0.0001")); // 0.01%
         BigDecimal gst = (brokerage.add(sebiCharges)).multiply(new BigDecimal("0.18")); // 18% on brokerage + sebi
 

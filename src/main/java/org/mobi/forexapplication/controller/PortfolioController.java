@@ -79,13 +79,12 @@ public class PortfolioController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/charges")
+    @PostMapping("/charges")
     public ResponseEntity<TransactionChargesDTO> getTransactionCharges(
-            @RequestParam Long userId,
-            @RequestParam Long stockId,
-            @RequestParam int quantity) {
+            @RequestBody ChargesRequest request) {
 
-        TransactionChargesDTO charges = portfolioService.calculateTransactionCharges(userId, stockId, quantity);
+        Long userId=getCurrentUserId();
+        TransactionChargesDTO charges = portfolioService.calculateTransactionCharges(userId, request.getStockId(),request.getQuantity());
         return ResponseEntity.ok(charges);
     }
 }
