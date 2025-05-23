@@ -274,7 +274,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         BigDecimal stockPrice = BigDecimal.valueOf(stock.getStockPrice());
         BigDecimal transactionValue = stockPrice.multiply(BigDecimal.valueOf(quantity));
 
-        BigDecimal brokerage = transactionValue.multiply(new BigDecimal("0.0005")); // 0.05%
+        BigDecimal brokerage = transactionValue.multiply(new BigDecimal("0.003")); // 0.3%
         BigDecimal maxBrokerage = BigDecimal.valueOf(20);
 
         if (brokerage.compareTo(maxBrokerage) > 0) {
