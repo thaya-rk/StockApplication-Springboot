@@ -14,4 +14,7 @@ public interface AuthService {
     void logout();
 
     Optional<User> getUserByUsername(String username);
+
+    void sendPasswordResetToken(String email);
+    void resetPassword(String token, String newPassword);
 }

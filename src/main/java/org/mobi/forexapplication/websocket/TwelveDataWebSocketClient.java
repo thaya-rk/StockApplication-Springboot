@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +48,7 @@ public class TwelveDataWebSocketClient {
 
             @Override
             public void onMessage(String message) {
-                System.out.println("📨 Price Update: " + message);
+//                System.out.println("📨 Price Update: " + message);
                 broadcastHandler.broadcast(message);
             }
 

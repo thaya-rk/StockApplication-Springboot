@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
@@ -93,5 +95,30 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("Failed to retrieve user: " + e.getMessage(), null));
         }
+
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        try {
+            authService.sendPasswordResetToken(email);
+            return ResponseEntity.ok(new ApiResponse<>("Reset link sent to email", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Failed: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+        try {
+            authService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(new ApiResponse<>("Password reset successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Failed: " + e.getMessage(), null));
+        }
+    }
+
 }
