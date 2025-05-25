@@ -33,7 +33,7 @@ public class TwelveDataWebSocketClient {
             public void onOpen(org.java_websocket.handshake.ServerHandshake handshake) {
                 System.out.println("✅ Connected to TwelveData");
 
-                String subscribeMessage = "{ \"action\": \"subscribe\", \"params\": { \"symbols\": \"BTC/USD\" } }";
+                String subscribeMessage = "{ \"action\": \"subscribe\", \"params\": { \"symbols\": \"BTC/USD,EUR/USD,AAPL\" } }";
 
                 send(subscribeMessage);
 
@@ -48,7 +48,7 @@ public class TwelveDataWebSocketClient {
 
             @Override
             public void onMessage(String message) {
-//                System.out.println("📨 Price Update: " + message);
+                System.out.println("📨 Price Update: " + message);
                 broadcastHandler.broadcast(message);
             }
 

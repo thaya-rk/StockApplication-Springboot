@@ -32,8 +32,6 @@ public class Holdings {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
-
     public Holdings() {
 
     }
