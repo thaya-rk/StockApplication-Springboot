@@ -44,6 +44,17 @@ public class User  {
     @Column
     private Date dob;
 
+    @Column(name = "email_verified")
+    private boolean emailVerified = false;
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
     @Column(nullable = false,precision = 12,scale = 2)
     private BigDecimal dematBalance=BigDecimal.ZERO;
 

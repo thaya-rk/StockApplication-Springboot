@@ -5,22 +5,17 @@ import org.mobi.forexapplication.dto.AuthResponse;
 import org.mobi.forexapplication.dto.LoginDTO;
 import org.mobi.forexapplication.model.PasswordResetOTP;
 import org.mobi.forexapplication.model.User;
-import org.mobi.forexapplication.repository.PasswordResetOtpRepository;
-import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.AuthService;
 import org.mobi.forexapplication.security.JwtUtil;
+import org.mobi.forexapplication.repository.UserRepository;
+import org.mobi.forexapplication.utils.OTPService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -32,17 +27,12 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder encoder;
 
     @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private PasswordResetOtpRepository passwordResetOtpRepository;
-
+    private OTPService otpService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
-
 
     @Override
     public User register(User user) {
@@ -73,48 +63,25 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout() {
-        // No logic needed for stateless JWT
         throw new UnsupportedOperationException("Logout is handled client-side by clearing the JWT token.");
     }
 
     @Override
     public Optional<User> getUserByUsername(String username) {
-
         return userRepository.findByUsername(username);
     }
 
     @Override
     @Transactional
     public void sendPasswordResetOTP(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("Email not found");
-        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email not found"));
 
-        User user = userOpt.get();
+        otpService.clearOtpForUser(user);
+        var otpEntity = otpService.createAndSaveOtp(user, "RESET_PASSWORD");
+        otpService.sendOtpEmail(user, "Password Reset OTP",
+                "Hello " + user.getUsername() + ",\n\nYour password reset OTP is: ", otpEntity.getOtp());
 
-        // Optional cleanup of previous OTP
-        passwordResetOtpRepository.deleteByUser(user);
-        passwordResetOtpRepository.flush();
-
-        // Generate a 6-digit OTP
-        String otp = String.valueOf(100000 + new Random().nextInt(900000));
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
-
-        PasswordResetOTP resetOTP = new PasswordResetOTP(otp, user, expiry);
-        passwordResetOtpRepository.save(resetOTP);
-
-        String messageBody = "Hello " + user.getUsername() + ",\n\n" +
-                "Your password reset OTP is: " + otp + "\n" +
-                "It will expire in 15 minutes.\n\n" +
-                "If you did not request this, please ignore.";
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Password Reset OTP");
-        message.setText(messageBody);
-
-        mailSender.send(message);
         logger.info("OTP sent to {}", email);
     }
 
@@ -124,23 +91,41 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid email"));
 
-        PasswordResetOTP resetOTP = passwordResetOtpRepository.findByUserAndOtp(user, otp)
-                .orElseThrow(() -> new RuntimeException("Invalid OTP"));
-
-        if (resetOTP.isUsed()) {
-            throw new RuntimeException("OTP has already been used.");
-        }
-
-        if (resetOTP.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("OTP has expired.");
-        }
+        otpService.validateOtp(user, otp, "RESET_PASSWORD");
 
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
 
-        resetOTP.setUsed(true);
-        passwordResetOtpRepository.save(resetOTP);
-
         logger.info("Password reset successfully for user: {}", email);
     }
+
+
+    @Override
+    @Transactional
+    public void sendEmailVerificationOtp(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        otpService.clearOtpForUser(user);
+        PasswordResetOTP otpEntity = otpService.createAndSaveOtp(user, "EMAIL_VERIFICATION");
+
+        otpService.sendOtpEmail(user, "Email Verification OTP",
+                "Hello " + user.getUsername() + ",\n\nYour email verification OTP is: ",
+                otpEntity.getOtp());
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmailOtp(String username, String otp) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        otpService.validateOtp(user, otp, "EMAIL_VERIFICATION");
+
+        user.setEmailVerified(true); // Add this field to your User entity if not already
+        userRepository.save(user);
+
+        logger.info("Email verified successfully for user: {}", username);
+    }
+
 }

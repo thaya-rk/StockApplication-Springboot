@@ -18,4 +18,9 @@ public interface AuthService {
     void sendPasswordResetOTP(String email);
 
     void resetPasswordWithOTP(String email,String otp,String newPassword);
+
+    void sendEmailVerificationOtp(String username);
+
+    void verifyEmailOtp(String username, String otp);
+
 }
