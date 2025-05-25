@@ -5,18 +5,18 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="password_reset_token")
-public class PasswordResetToken {
+@Table(name = "password_reset_otp")
+public class PasswordResetOTP {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,unique = true)
-    private String token;
+    @Column(nullable = false)
+    private String otp;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false,name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
     @Column(nullable = false)
@@ -25,11 +25,10 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private boolean used = false;
 
-    // Constructors
-    public PasswordResetToken() {}
+    public PasswordResetOTP() {}
 
-    public PasswordResetToken(String token, User user, LocalDateTime expiryDate) {
-        this.token = token;
+    public PasswordResetOTP(String otp, User user, LocalDateTime expiryDate) {
+        this.otp = otp;
         this.user = user;
         this.expiryDate = expiryDate;
         this.used = false;
@@ -43,12 +42,12 @@ public class PasswordResetToken {
         this.id = id;
     }
 
-    public String getToken() {
-        return token;
+    public String getOtp() {
+        return otp;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
     public User getUser() {

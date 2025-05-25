@@ -1,10 +1,11 @@
 package org.mobi.forexapplication.serviceImpl;
 
+import jakarta.transaction.Transactional;
 import org.mobi.forexapplication.dto.AuthResponse;
 import org.mobi.forexapplication.dto.LoginDTO;
-import org.mobi.forexapplication.model.PasswordResetToken;
+import org.mobi.forexapplication.model.PasswordResetOTP;
 import org.mobi.forexapplication.model.User;
-import org.mobi.forexapplication.repository.PasswordResetTokenRepository;
+import org.mobi.forexapplication.repository.PasswordResetOtpRepository;
 import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.AuthService;
 import org.mobi.forexapplication.security.JwtUtil;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -36,7 +38,8 @@ public class AuthServiceImpl implements AuthService {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
+    private PasswordResetOtpRepository passwordResetOtpRepository;
+
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
@@ -80,64 +83,64 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.findByUsername(username);
     }
 
-    public void sendPasswordResetToken(String email) {
-        logger.info("Starting sendPasswordResetToken for email: {}", email);
+    @Override
+    @Transactional
+    public void sendPasswordResetOTP(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            logger.error("Email not found: {}", email);
             throw new RuntimeException("Email not found");
         }
+
         User user = userOpt.get();
 
-        String token = UUID.randomUUID().toString();
-        logger.info("Generated token: {}", token);
+        // Optional cleanup of previous OTP
+        passwordResetOtpRepository.deleteByUser(user);
+        passwordResetOtpRepository.flush();
 
-        PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setToken(token);
-        resetToken.setUser(user);
-        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(15));
-        passwordResetTokenRepository.save(resetToken);
+        // Generate a 6-digit OTP
+        String otp = String.valueOf(100000 + new Random().nextInt(900000));
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
 
-        String resetLink = "http://localhost:4200/reset-password?token=" + token;
-        logger.info("Reset link: {}", resetLink);
+        PasswordResetOTP resetOTP = new PasswordResetOTP(otp, user, expiry);
+        passwordResetOtpRepository.save(resetOTP);
 
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(email);
-            message.setSubject("Password Reset Request");
-            message.setText("Hello " + user.getUsername() + ",\n\n" +
-                    "We received a request to reset your password. Use the link below to reset it:\n" +
-                    resetLink + "\n\n" +
-                    "This link will expire in 15 minutes.");
+        String messageBody = "Hello " + user.getUsername() + ",\n\n" +
+                "Your password reset OTP is: " + otp + "\n" +
+                "It will expire in 15 minutes.\n\n" +
+                "If you did not request this, please ignore.";
 
-            System.out.println("Sending email to: " + message.getTo()[0]);
-            System.out.println("Subject: " + message.getSubject());
-            System.out.println("Body: " + message.getText());
-            mailSender.send(message);
-            logger.info("Password reset email sent successfully to {}", email);
-        } catch (Exception e) {
-            logger.error("Failed to send email to {}: {}", email, e.getMessage());
-            throw new RuntimeException("Failed to send email");
-        }
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Password Reset OTP");
+        message.setText(messageBody);
+
+        mailSender.send(message);
+        logger.info("OTP sent to {}", email);
     }
 
     @Override
-    public void resetPassword(String token, String newPassword) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid token"));
+    @Transactional
+    public void resetPasswordWithOTP(String email, String otp, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Invalid email"));
 
-        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token expired");
+        PasswordResetOTP resetOTP = passwordResetOtpRepository.findByUserAndOtp(user, otp)
+                .orElseThrow(() -> new RuntimeException("Invalid OTP"));
+
+        if (resetOTP.isUsed()) {
+            throw new RuntimeException("OTP has already been used.");
         }
 
-        User user = resetToken.getUser();
-        System.out.println("User from reset token is "+user.getUsername());
-        logger.info("Encoded new password: {}", encoder.encode(newPassword));
+        if (resetOTP.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired.");
+        }
+
         user.setPassword(encoder.encode(newPassword));
-
         userRepository.save(user);
-        logger.info("User password updated for email: {}", user.getEmail());
-        passwordResetTokenRepository.delete(resetToken);
-    }
 
+        resetOTP.setUsed(true);
+        passwordResetOtpRepository.save(resetOTP);
+
+        logger.info("Password reset successfully for user: {}", email);
+    }
 }

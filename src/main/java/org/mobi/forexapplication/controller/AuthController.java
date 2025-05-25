@@ -99,11 +99,12 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<ApiResponse<String>> sendOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
+
         try {
-            authService.sendPasswordResetToken(email);
-            return ResponseEntity.ok(new ApiResponse<>("Reset link sent to email", null));
+            authService.sendPasswordResetOTP(email);
+            return ResponseEntity.ok(new ApiResponse<>("OTP sent to your email", null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("Failed: " + e.getMessage(), null));
         }
@@ -111,14 +112,18 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
+        String email = body.get("email");
+        String otp = body.get("otp");
         String newPassword = body.get("newPassword");
+
         try {
-            authService.resetPassword(token, newPassword);
-            return ResponseEntity.ok(new ApiResponse<>("Password reset successfully", null));
+            authService.resetPasswordWithOTP(email, otp, newPassword);
+            return ResponseEntity.ok(new ApiResponse<>("Password reset successful", null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("Failed: " + e.getMessage(), null));
         }
     }
+
+
 
 }

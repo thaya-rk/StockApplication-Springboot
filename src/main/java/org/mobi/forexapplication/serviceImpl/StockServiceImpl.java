@@ -1,10 +1,7 @@
 package org.mobi.forexapplication.serviceImpl;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.mobi.forexapplication.model.PasswordResetToken;
 import org.mobi.forexapplication.model.Stock;
-import org.mobi.forexapplication.model.User;
-import org.mobi.forexapplication.repository.PasswordResetTokenRepository;
 import org.mobi.forexapplication.repository.StockRepository;
 import org.mobi.forexapplication.repository.UserRepository;
 import org.mobi.forexapplication.service.StockService;
@@ -14,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class StockServiceImpl implements StockService {

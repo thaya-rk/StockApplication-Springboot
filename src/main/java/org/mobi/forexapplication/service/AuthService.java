@@ -15,6 +15,7 @@ public interface AuthService {
 
     Optional<User> getUserByUsername(String username);
 
-    void sendPasswordResetToken(String email);
-    void resetPassword(String token, String newPassword);
+    void sendPasswordResetOTP(String email);
+
+    void resetPasswordWithOTP(String email,String otp,String newPassword);
 }
