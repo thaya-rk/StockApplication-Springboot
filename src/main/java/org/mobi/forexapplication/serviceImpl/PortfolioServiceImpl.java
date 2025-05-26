@@ -58,7 +58,6 @@ public class PortfolioServiceImpl implements PortfolioService {
         if (user.getDematBalance().compareTo(totalPrice) < 0) {
             throw new RuntimeException("Insufficient balance to buy stock");
         }
-
         // Deduct balance
         user.setDematBalance(user.getDematBalance().subtract(totalPrice));
         userRepository.save(user);
@@ -183,21 +182,18 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private BigDecimal calculateSebICharges(Long userId) {
-        // SEBI charges ₹10 per crore (₹10/1,00,00,000) on total txn amount
+        // SEBI charges ₹10 per crore on total txn amount
         List<Transaction> transactions = transactionRepository.findByUser_UserId(userId);
         BigDecimal totalTxnAmount = transactions.stream()
                 .map(Transaction::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal crore = BigDecimal.valueOf(10000000);  // 1 crore
-        BigDecimal ratePerCrore = BigDecimal.TEN; // ₹10
+        BigDecimal ratePerCrore = BigDecimal.TEN;
 
         BigDecimal charges = totalTxnAmount.divide(crore, 10, RoundingMode.HALF_UP).multiply(ratePerCrore);
         return charges;
     }
-
-
-
 
     @Override
     public PortfolioSummaryDTO getPortfolioSummary(Long userId) {
@@ -237,8 +233,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         return new PortfolioSummaryDTO(portfolioValue, totalPL, gainPercent, charges);
     }
-
-
 
     @Override
     public StockStatsDTO getStockStats(Long userId, Long stockId) {
@@ -290,7 +284,4 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         return new TransactionChargesDTO(brokerage, stampDuty, transactionTax, sebiCharges, gst, totalCharges);
     }
-
-
-
 }

@@ -10,7 +10,6 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketConfigurer{
     private final StockBroadcastHandler handler;
 
-
     public WebSocketConfig(StockBroadcastHandler handler) {
         this.handler = handler;
     }

@@ -10,7 +10,6 @@ public class TransactionChargesDTO {
     private BigDecimal gst;
     private BigDecimal totalCharges;
 
-    // Getters and Setters
 
     // Constructors
     public TransactionChargesDTO() {}
