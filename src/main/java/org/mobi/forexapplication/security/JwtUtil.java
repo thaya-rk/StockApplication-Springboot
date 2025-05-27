@@ -42,11 +42,6 @@ public class JwtUtil {
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
-    public Long getUserIdFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.get("userId", Long.class);
-    }
-
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);

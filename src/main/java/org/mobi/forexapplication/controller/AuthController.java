@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
@@ -126,18 +127,24 @@ public class AuthController {
     }
 
     @PostMapping("/send-verification-email")
-    public ResponseEntity<?> sendEmailVerification(Principal principal) {
+    public ResponseEntity<ApiResponse<Boolean>> sendEmailVerification(Principal principal) {
         String username = principal.getName();
         authService.sendEmailVerificationOtp(username);
-        return ResponseEntity.ok("Verification email sent.");
+
+        ApiResponse<Boolean> response = new ApiResponse<>("Verification email sent.", true);
+        return ResponseEntity.ok(response);
     }
 
+
     @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> requestBody, Principal principal) {
+    public ResponseEntity<ApiResponse<Boolean>> verifyEmail(@RequestBody Map<String, String> requestBody, Principal principal) {
         String otp = requestBody.get("otp");
         String username = principal.getName();
+
         authService.verifyEmailOtp(username, otp);
-        return ResponseEntity.ok("Email verified successfully.");
+
+        ApiResponse<Boolean> response = new ApiResponse<>("Email verified successfully.", true);
+        return ResponseEntity.ok(response);
     }
 
 }

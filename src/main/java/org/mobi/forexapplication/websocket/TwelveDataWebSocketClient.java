@@ -20,7 +20,7 @@ public class TwelveDataWebSocketClient {
 
     private WebSocketClient client;
     private ScheduledExecutorService scheduler;
-    private final String symbolsJson = "[{\"symbol\":\"BTC/USD\"},{\"symbol\":\"EUR/USD\"},{\"symbol\":\"XAU/USD\"},{\"symbol\":\"1299\"}]";
+    private final String symbolsJson = "[{\"symbol\":\"BTC/USD\"},{\"symbol\":\"EUR/USD\"},{\"symbol\":\"XAU/USD\"}]";
 
     public TwelveDataWebSocketClient(StockBroadcastHandler broadcastHandler) {
         this.broadcastHandler = broadcastHandler;

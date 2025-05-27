@@ -10,14 +10,16 @@ public class StockStatsDTO {
     private BigDecimal totalValue; // quantity * currentPrice
     private BigDecimal pl;         // profit/loss absolute
     private BigDecimal plPercent;  // profit/loss %
+    private BigDecimal totalCharges;
 
-    public StockStatsDTO(String companyName, int quantity, BigDecimal currentPrice, BigDecimal totalValue, BigDecimal pl, BigDecimal plPercent) {
+    public StockStatsDTO(String companyName, int quantity, BigDecimal currentPrice, BigDecimal totalValue, BigDecimal pl, BigDecimal plPercent,BigDecimal totalCharges) {
         this.companyName = companyName;
         this.quantity = quantity;
         this.currentPrice = currentPrice;
         this.totalValue = totalValue;
         this.pl = pl;
         this.plPercent = plPercent;
+        this.totalCharges=totalCharges;
     }
 
     public String getCompanyName() {
@@ -66,5 +68,13 @@ public class StockStatsDTO {
 
     public void setPlPercent(BigDecimal plPercent) {
         this.plPercent = plPercent;
+    }
+
+    public BigDecimal getTotalCharges() {
+        return totalCharges;
+    }
+
+    public void setTotalCharges(BigDecimal totalCharges) {
+        this.totalCharges = totalCharges;
     }
 }

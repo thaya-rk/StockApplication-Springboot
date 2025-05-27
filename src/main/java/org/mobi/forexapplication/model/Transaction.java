@@ -38,9 +38,14 @@ public class Transaction {
     @Column(nullable = false, length = 10)
     private String status; // SUCCESS, FAILED, PENDING
 
+    @Column(name = "transaction_charges", precision = 14, scale = 2, nullable = false)
+    private BigDecimal transactionCharges = BigDecimal.ZERO;
+
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+
 
     public Transaction(User user, Stock stock, String type, Integer quantity, BigDecimal price) {
         this.user = user;
@@ -133,4 +138,13 @@ public class Transaction {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public BigDecimal getTransactionCharges() {
+        return transactionCharges;
+    }
+
+    public void setTransactionCharges(BigDecimal transactionCharges) {
+        this.transactionCharges = transactionCharges;
+    }
+
 }

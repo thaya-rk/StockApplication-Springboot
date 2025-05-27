@@ -45,21 +45,27 @@ public class PortfolioServiceImpl implements PortfolioService {
         Long userId = request.getUserId();
         User user = getUserById(userId);
 
-
         Stock stock = stockRepository.findById(request.getStockId())
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
         BigDecimal quantity = BigDecimal.valueOf(request.getQuantity());
         BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
 
-
         BigDecimal totalPrice = currentPrice.multiply(quantity);
 
-        if (user.getDematBalance().compareTo(totalPrice) < 0) {
-            throw new RuntimeException("Insufficient balance to buy stock");
+        // Calculate transaction charges for buy
+        TransactionChargesDTO chargesDTO = calculateTransactionCharges(userId, stock.getStockId(), request.getQuantity());
+        BigDecimal totalCharges = chargesDTO.getTotalCharges();
+
+        BigDecimal totalCost = totalPrice.add(totalCharges);
+
+        if (user.getDematBalance().compareTo(totalCost) < 0) {
+            throw new RuntimeException("Insufficient balance to buy stock including transaction charges");
         }
+
+
         // Deduct balance
-        user.setDematBalance(user.getDematBalance().subtract(totalPrice));
+        user.setDematBalance(user.getDematBalance().subtract(totalCost));
         userRepository.save(user);
 
         Holdings holdings = holdingRepository.findByUser_UserIdAndStock_StockId(user.getUserId(), stock.getStockId())
@@ -88,6 +94,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         // Record transaction
         Transaction txn = new Transaction(user, stock, "BUY", quantity.intValue(), currentPrice);
+        txn.setTransactionCharges(totalCharges);
         transactionRepository.save(txn);
     }
 
@@ -112,16 +119,25 @@ public class PortfolioServiceImpl implements PortfolioService {
         BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
         BigDecimal totalPrice = currentPrice.multiply(BigDecimal.valueOf(sellQty));
 
+        TransactionChargesDTO chargesDTO = calculateTransactionCharges(userId, stock.getStockId(), sellQty);
+        BigDecimal totalCharges = chargesDTO.getTotalCharges();
+
         // Update holdings
         holdings.setQuantity(holdings.getQuantity() - sellQty);
         holdingRepository.save(holdings);
 
+        BigDecimal netAmount = totalPrice.subtract(totalCharges);
+        if (netAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Net amount after transaction charges is negative");
+        }
+
         // Add balance to user
-        user.setDematBalance(user.getDematBalance().add(totalPrice));
+        user.setDematBalance(user.getDematBalance().add(netAmount));
         userRepository.save(user);
 
         // Record transaction
         Transaction txn = new Transaction(user, stock, "SELL", sellQty, currentPrice);
+        txn.setTransactionCharges(totalCharges);
         transactionRepository.save(txn);
     }
 
@@ -250,13 +266,19 @@ public class PortfolioServiceImpl implements PortfolioService {
                 ? pl.divide(investedValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
+        TransactionChargesDTO chargesDTO = calculateTransactionCharges(userId, stockId, holding.getQuantity());
+        BigDecimal totalCharges = chargesDTO.getTotalCharges();
+
+
         return new StockStatsDTO(
                 holding.getStock().getCompanyName(),
                 holding.getQuantity(),
                 currentPrice,
                 totalValue,
                 pl,
-                plPercent
+                plPercent,
+                totalCharges
+
         );
     }
 
