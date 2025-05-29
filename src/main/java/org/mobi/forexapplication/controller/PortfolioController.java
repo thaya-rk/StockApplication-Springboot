@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-
 @RestController
 @RequestMapping("/api/portfolio")
 public class PortfolioController {
@@ -25,16 +24,20 @@ public class PortfolioController {
     private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
+            throw new GlobalCustomException("User not authenticated");
         }
 
         Object principal = auth.getPrincipal();
         if (principal instanceof UserDetails) {
             String username = ((UserDetails) principal).getUsername();
-            return portfolioService.getUserIdByUsername(username);
+            Long userId = portfolioService.getUserIdByUsername(username);
+            if (userId == null) {
+                throw new GlobalCustomException("User ID not found for username: " + username);
+            }
+            return userId;
         }
 
-        throw new RuntimeException("Invalid user principal");
+        throw new GlobalCustomException("Invalid user principal");
     }
 
     @PostMapping("/buy")
@@ -65,7 +68,7 @@ public class PortfolioController {
         Long userId = getCurrentUserId();
 
         if (Objects.isNull(userId)) {
-            throw GlobalCustomException.UserIdNotFound(userId);
+            throw new GlobalCustomException("User ID not found");
         } else {
             PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
             return ResponseEntity.ok(summary);
@@ -80,11 +83,9 @@ public class PortfolioController {
     }
 
     @PostMapping("/charges")
-    public ResponseEntity<TransactionChargesDTO> getTransactionCharges(
-            @RequestBody ChargesRequest request) {
-
-        Long userId=getCurrentUserId();
-        TransactionChargesDTO charges = portfolioService.calculateTransactionCharges(userId, request.getStockId(),request.getQuantity());
+    public ResponseEntity<TransactionChargesDTO> getTransactionCharges(@RequestBody ChargesRequest request) {
+        Long userId = getCurrentUserId();
+        TransactionChargesDTO charges = portfolioService.calculateTransactionCharges(userId, request.getStockId(), request.getQuantity());
         return ResponseEntity.ok(charges);
     }
 }

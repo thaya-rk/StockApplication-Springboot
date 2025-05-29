@@ -1,5 +1,6 @@
 package org.mobi.forexapplication.controller;
 
+import org.mobi.forexapplication.Exception.GlobalCustomException;
 import org.mobi.forexapplication.model.Stock;
 import org.mobi.forexapplication.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,11 @@ public class WatchlistController {
 
     @GetMapping("/default")
     public ResponseEntity<List<Stock>> getAllStocks() {
-        List<Stock> allStocks = stockService.getAllStocks();
-        return ResponseEntity.ok(allStocks);
+        try {
+            List<Stock> allStocks = stockService.getAllStocks();
+            return ResponseEntity.ok(allStocks);
+        } catch (Exception e) {
+            throw new GlobalCustomException("Failed to fetch stocks: " + e.getMessage());
+        }
     }
-
 }

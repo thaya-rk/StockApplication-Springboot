@@ -16,13 +16,13 @@ public class StockBroadcastHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         sessions.add(session);
-        System.out.println("Session started: "+session.getId());
+//        System.out.println("Session started: "+session.getId());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) {
         sessions.remove(session);
-        System.out.println("Session closed: "+session.getId());
+//        System.out.println("Session closed: "+session.getId());
 
     }
 
@@ -38,7 +38,7 @@ public class StockBroadcastHandler extends TextWebSocketHandler {
             } catch (IOException e) {
                 e.printStackTrace();
                 sessions.remove(session);
-                System.out.println("Session closed: "+session.getId());
+//                System.out.println("Session closed: "+session.getId());
 
             }
         });

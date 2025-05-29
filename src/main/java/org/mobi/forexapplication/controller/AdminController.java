@@ -1,5 +1,6 @@
 package org.mobi.forexapplication.controller;
 
+import org.mobi.forexapplication.Exception.GlobalCustomException;
 import org.mobi.forexapplication.dto.StockDeleteRequest;
 import org.mobi.forexapplication.dto.StockUpdateRequest;
 import org.mobi.forexapplication.model.Stock;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -25,33 +25,23 @@ public class AdminController {
     @GetMapping()
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> adminDashboard() {
-        System.out.println("url hit");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (Objects.isNull(auth) || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
+            throw new GlobalCustomException("Unauthorized access. Please log in.");
         }
 
-        // Get username (works if principal is a String or UserDetails)
         String username = auth.getName();
-        System.out.println("Username: " + username);
-
-        // Get roles/authorities as a comma separated string
-        String roles = auth.getAuthorities()
-                .stream()
-                .map(grantedAuthority -> grantedAuthority.getAuthority())
-                .reduce((a, b) -> a + ", " + b)
-                .orElse("No roles");
-
-        System.out.println("Roles: " + roles);
 
         return ResponseEntity.ok("Welcome Admin: " + username);
     }
 
-
     @PostMapping("/stocks")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Stock> addStock(@RequestBody Stock stock) {
+        if (stock == null || stock.getTickerSymbol() == null || stock.getStockPrice() == null) {
+            throw new GlobalCustomException("Invalid stock data.");
+        }
         Stock createdStock = stockService.addStock(stock);
         return new ResponseEntity<>(createdStock, HttpStatus.CREATED);
     }
@@ -59,6 +49,9 @@ public class AdminController {
     @PutMapping("/stocks")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Stock> updateStockPrice(@RequestBody StockUpdateRequest updateRequest) {
+        if (updateRequest == null || updateRequest.getId() == null || updateRequest.getNewPrice() == null) {
+            throw new GlobalCustomException("Invalid update request.");
+        }
         Stock updatedStock = stockService.updateStockPrice(updateRequest.getId(), updateRequest.getNewPrice());
         return new ResponseEntity<>(updatedStock, HttpStatus.OK);
     }
@@ -66,6 +59,9 @@ public class AdminController {
     @DeleteMapping("/stocks")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStock(@RequestBody StockDeleteRequest request) {
+        if (request == null || request.getId() == null) {
+            throw new GlobalCustomException("Invalid delete request.");
+        }
         stockService.deleteStock(request.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

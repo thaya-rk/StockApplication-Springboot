@@ -34,13 +34,14 @@ public class OTPService {
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
 
         PasswordResetOTP entity = new PasswordResetOTP(otp, user, expiry);
-        entity.setPurpose(purpose); // You can add a 'purpose' field (e.g., 'RESET_PASSWORD', 'VERIFY_EMAIL')
+        entity.setPurpose(purpose);
         return otpRepository.save(entity);
     }
 
     public void sendOtpEmail(User user, String subject, String bodyPrefix, String otp) {
         String messageBody = bodyPrefix + otp + "\n\nThis OTP will expire in 15 minutes.";
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("demostockapp@gmail.com");
         message.setTo(user.getEmail());
         message.setSubject(subject);
         message.setText(messageBody);

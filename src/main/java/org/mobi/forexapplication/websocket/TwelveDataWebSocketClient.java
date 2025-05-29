@@ -57,7 +57,7 @@ public class TwelveDataWebSocketClient {
 
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("📨 Price Update: " + message);
+//                    System.out.println("📨 Price Update: " + message);
                     broadcastHandler.broadcast(message);
                 }
 
