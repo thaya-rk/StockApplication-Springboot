@@ -13,7 +13,6 @@ import java.util.Optional;
 public interface HoldingRepository extends JpaRepository<Holdings,Long> {
     Optional<Holdings> findByUser_UserIdAndStock_StockId(Long userId, Long stockId);
     List<Holdings> findByUser_UserId(Long userId);
-
-
+    boolean existsByStock_StockId(Long stockId);
 
 }

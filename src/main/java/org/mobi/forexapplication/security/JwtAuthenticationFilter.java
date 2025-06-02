@@ -77,7 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 System.out.println("JWT validation failed: " + e.getMessage());
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

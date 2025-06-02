@@ -67,12 +67,8 @@ public class PortfolioController {
     public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary() {
         Long userId = getCurrentUserId();
 
-        if (Objects.isNull(userId)) {
-            throw new GlobalCustomException("User ID not found");
-        } else {
-            PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
-            return ResponseEntity.ok(summary);
-        }
+        PortfolioSummaryDTO summary = portfolioService.getPortfolioSummary(userId);
+        return ResponseEntity.ok(summary);
     }
 
     @GetMapping("/stats/{stockId}")

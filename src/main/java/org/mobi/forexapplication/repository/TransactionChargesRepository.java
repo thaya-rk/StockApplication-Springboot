@@ -9,5 +9,4 @@ import java.util.List;
 @Repository
 public interface TransactionChargesRepository extends JpaRepository<Transaction_charges,Long> {
     List<Transaction_charges> findByTransaction_User_UserId(Long userId);
-    List<Transaction_charges> findByTransaction_Stock_StockId(Long stockId);
 }
