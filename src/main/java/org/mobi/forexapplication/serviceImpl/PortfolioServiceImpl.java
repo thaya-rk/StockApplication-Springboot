@@ -97,6 +97,9 @@ public class PortfolioServiceImpl implements PortfolioService {
         txn.setTransactionCharges(totalCharges);
         System.out.println("Total Transaction charges involved issssssssssssssssssssss"+txn.getTransactionCharges());
         transactionRepository.save(txn);
+
+        saveTransactionChargesEntity(txn, chargesDTO);
+
     }
 
     @Override
@@ -140,6 +143,9 @@ public class PortfolioServiceImpl implements PortfolioService {
         Transaction txn = new Transaction(user, stock, "SELL", sellQty, currentPrice);
         txn.setTransactionCharges(totalCharges);
         transactionRepository.save(txn);
+
+        saveTransactionChargesEntity(txn, chargesDTO);
+
     }
 
     @Override
@@ -307,4 +313,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         return new TransactionChargesDTO(brokerage, stampDuty, transactionTax, sebiCharges, gst, totalCharges);
     }
+
+    private void saveTransactionChargesEntity(Transaction txn, TransactionChargesDTO chargesDTO) {
+        Transaction_charges chargesEntity = new Transaction_charges();
+        chargesEntity.setTransaction(txn);
+        chargesEntity.setBrokerage(chargesDTO.getBrokerage());
+        chargesEntity.setStampDuty(chargesDTO.getStampDuty());
+        chargesEntity.setTransactionTax(chargesDTO.getTransactionTax());
+        chargesEntity.setSebiCharges(chargesDTO.getSebiCharges());
+        chargesEntity.setGst(chargesDTO.getGst());
+        chargesEntity.setTotalCharges(chargesDTO.getTotalCharges());
+
+        transactionChargesRepository.save(chargesEntity);
+    }
+
 }

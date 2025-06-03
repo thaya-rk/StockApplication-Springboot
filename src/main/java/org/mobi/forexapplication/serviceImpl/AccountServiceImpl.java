@@ -84,12 +84,31 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     public void deposit(BigDecimal amount) {
         User user=getCurrentUser();
+        System.out.println("Current user: " + user.getUsername());
+
         user.setDematBalance(user.getDematBalance().add(amount));
         userRepository.save(user);
 
         Transaction transaction=new Transaction(user,"DEPOSIT",amount,LocalDateTime.now());
         transactionRepository.save(transaction);
     }
+
+    @Override
+    public void deposit(BigDecimal amount, String fpxTxnId) {
+        if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
+            System.out.println("Duplicate FPX transaction ignored: " + fpxTxnId);
+            return;
+        }
+
+        User user = getCurrentUser();
+        user.setDematBalance(user.getDematBalance().add(amount));
+        userRepository.save(user);
+
+        Transaction transaction = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
+        transaction.setFpxTxnId(fpxTxnId);
+        transactionRepository.save(transaction);
+    }
+
 
 
     @Override

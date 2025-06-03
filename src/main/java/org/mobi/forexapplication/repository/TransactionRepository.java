@@ -10,5 +10,7 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findByUser_UserId(Long userId);
     List<Transaction> findByUserOrderByTimestampDesc(User user);
+    boolean existsByFpxTxnId(String fpxTxnId);
+
 
 }

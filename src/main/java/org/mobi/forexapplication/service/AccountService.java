@@ -18,6 +18,10 @@ public interface AccountService {
 
     void deposit(BigDecimal amount);
 
+    void deposit(BigDecimal amount, String fpxTxnId);
+
+
+
     boolean withdraw(BigDecimal amount);
 
 }

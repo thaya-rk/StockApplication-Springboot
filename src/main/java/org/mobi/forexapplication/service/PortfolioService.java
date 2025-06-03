@@ -19,4 +19,5 @@ public interface PortfolioService {
     StockStatsDTO getStockStats(Long userId, Long stockId);
     TransactionChargesDTO calculateTransactionCharges(Long userId, Long stockId, int quantity);
 
+
 }

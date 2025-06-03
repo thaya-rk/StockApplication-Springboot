@@ -41,6 +41,9 @@ public class Transaction {
     @Column(name = "transaction_charges", precision = 14, scale = 2, nullable = false)
     private BigDecimal transactionCharges=BigDecimal.ZERO;
 
+    @Column(name = "fpx_txn_id", unique = true)
+    private String fpxTxnId;
+
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime timestamp;
@@ -146,5 +149,13 @@ public class Transaction {
     public void setTransactionCharges(BigDecimal transactionCharges) {
         this.transactionCharges = transactionCharges;
     }
+    public String getFpxTxnId() {
+        return fpxTxnId;
+    }
+
+    public void setFpxTxnId(String fpxTxnId) {
+        this.fpxTxnId = fpxTxnId;
+    }
+
 
 }

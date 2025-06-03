@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class Transaction_charges {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     @OneToOne
