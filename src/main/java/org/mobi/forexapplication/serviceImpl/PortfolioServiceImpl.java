@@ -95,6 +95,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         // Record transaction
         Transaction txn = new Transaction(user, stock, "BUY", quantity.intValue(), currentPrice);
         txn.setTransactionCharges(totalCharges);
+        System.out.println("Total Transaction charges involved issssssssssssssssssssss"+txn.getTransactionCharges());
         transactionRepository.save(txn);
     }
 

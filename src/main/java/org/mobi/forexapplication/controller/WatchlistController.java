@@ -26,4 +26,6 @@ public class WatchlistController {
             throw new GlobalCustomException("Failed to fetch stocks: " + e.getMessage());
         }
     }
+
+    
 }

@@ -39,7 +39,7 @@ public class Transaction {
     private String status; // SUCCESS, FAILED, PENDING
 
     @Column(name = "transaction_charges", precision = 14, scale = 2, nullable = false)
-    private BigDecimal transactionCharges = BigDecimal.ZERO;
+    private BigDecimal transactionCharges=BigDecimal.ZERO;
 
     @CreationTimestamp
     @Column(nullable = false)
@@ -53,7 +53,7 @@ public class Transaction {
         this.type = type;
         this.quantity = quantity;
         this.totalAmount = price.multiply(BigDecimal.valueOf(quantity));
-        this.status = "SUCCESS"; // You can change this as per your logic
+        this.status = "SUCCESS";
         this.transactionDate = LocalDateTime.now();
     }
 
