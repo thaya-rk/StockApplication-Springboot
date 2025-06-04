@@ -42,7 +42,7 @@ public class PaymentController {
             System.out.println("Catch is called in payment controller");
             status = "failed";
         }
-
+        System.out.println("Redirect to frontend hit!!!!");
         // Redirect to Angular payment-status page with status
         String redirectUrl = String.format("http://localhost:4200/payment-status?status=%s&orderNo=%s&transactionId=%s",
                 status, orderNo, txnId);

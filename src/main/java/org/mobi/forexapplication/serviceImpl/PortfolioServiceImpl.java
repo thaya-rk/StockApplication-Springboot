@@ -152,6 +152,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     public List<HoldingResponse> getHoldingsByUserId(Long userId) {
         return holdingRepository.findByUser_UserId(userId)
                 .stream()
+                .filter(holding -> holding.getQuantity() > 0)
                 .map(holding -> {
                     Stock stock = holding.getStock();
                     BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
@@ -166,6 +167,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public Long getUserIdByUsername(String username) {
