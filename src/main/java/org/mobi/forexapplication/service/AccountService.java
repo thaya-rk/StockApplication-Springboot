@@ -18,7 +18,7 @@ public interface AccountService {
 
     void deposit(BigDecimal amount);
 
-    void deposit(BigDecimal amount, String fpxTxnId);
+    void depositToUser(BigDecimal amount, String fpxTxnId,Long userId);
 
     boolean withdraw(BigDecimal amount);
 

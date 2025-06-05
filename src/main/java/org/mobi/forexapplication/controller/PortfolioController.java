@@ -21,7 +21,7 @@ public class PortfolioController {
     @Autowired
     private PortfolioService portfolioService;
 
-    private Long getCurrentUserId() {
+    public Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new GlobalCustomException("User not authenticated");

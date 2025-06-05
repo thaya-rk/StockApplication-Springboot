@@ -24,21 +24,22 @@ public class AccountServiceImpl  implements AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private  User getCurrentUser() {
+    private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("Principal: " + principal);
+        System.out.println("Principal class: " + principal.getClass());
 
         String username;
-        //Using singleton here to get the existing instance without creating new one
         if (principal instanceof UserDetails) {
             username = ((UserDetails) principal).getUsername();
         } else {
-            username = principal.toString();
+            throw new RuntimeException("Unauthenticated: Principal is not an instance of UserDetails");
         }
-        System.out.println(username);
 
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
+
 
 
     @Override
@@ -93,23 +94,47 @@ public class AccountServiceImpl  implements AccountService {
         transactionRepository.save(transaction);
     }
 
+//    @Override
+//    public void deposit(BigDecimal amount, String fpxTxnId) {
+//        if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
+//            System.out.println("Duplicate FPX transaction ignored: " + fpxTxnId);
+//            return;
+//        }
+//        User user = getCurrentUser();
+//        System.out.println("The deposited user is "+user);
+//
+//        user.setDematBalance(user.getDematBalance().add(amount));
+//        userRepository.save(user);
+//
+//        Transaction transaction = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
+//        transaction.setFpxTxnId(fpxTxnId);
+//        transactionRepository.save(transaction);
+//    }
+
     @Override
-    public void deposit(BigDecimal amount, String fpxTxnId) {
+    public void depositToUser(BigDecimal amount, String fpxTxnId, Long userId) {
+
+        // 1. ignore duplicates
         if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
             System.out.println("Duplicate FPX transaction ignored: " + fpxTxnId);
             return;
         }
 
-        User user = getCurrentUser();
+        // 2. load the user directly by id
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        // 3. credit wallet
         user.setDematBalance(user.getDematBalance().add(amount));
         userRepository.save(user);
 
-        Transaction transaction = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
-        transaction.setFpxTxnId(fpxTxnId);
-        transactionRepository.save(transaction);
+        // 4. record the transaction
+        Transaction txn = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
+        txn.setFpxTxnId(fpxTxnId);
+        transactionRepository.save(txn);
+
+        System.out.println("Deposited " + amount + " to user " + user.getUsername());
     }
-
-
 
     @Override
     public boolean withdraw(BigDecimal amount) {

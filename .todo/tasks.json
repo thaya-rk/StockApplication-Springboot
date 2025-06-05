@@ -1,0 +1,22 @@
+[
+  {
+    "id": "TASK_1",
+    "priority": "MEDIUM",
+    "tags": [],
+    "description": "Watchlist Frontend Design",
+    "status": "IN_PROGRESS",
+    "date": {
+      "date": {
+        "year": 2025,
+        "month": 6,
+        "day": 5
+      },
+      "time": {
+        "hour": 9,
+        "minute": 26,
+        "second": 0,
+        "nano": 570544700
+      }
+    }
+  }
+]

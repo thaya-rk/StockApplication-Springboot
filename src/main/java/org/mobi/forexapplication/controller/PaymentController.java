@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Map;
 
 @RestController
@@ -19,34 +20,40 @@ public class PaymentController {
 
     @PostMapping("/api/payment-status")
     public void handlePaymentResponse(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
-        // Extract required values
         System.out.println("Received FPX payload: " + params);
-        String status = params.get("fpx_debitAuthCode").equals("00") ? "success" : "failed";
+
+        String debitAuthCode = params.get("fpx_debitAuthCode");
+        String status = "00".equals(debitAuthCode) ? "success" : "failed";
         String orderNo = params.get("fpx_sellerOrderNo");
         String txnId = params.get("fpx_fpxTxnId");
+        System.out.println("The response status from the fpx: " + status + " with order no: " + orderNo);
 
         try {
-            if ("00".equals(params.get("fpx_debitAuthCode"))) {
-                status = "success";
-
-                // Convert amount string (e.g., "10.00") to BigDecimal
+            if ("00".equals(debitAuthCode)) {
                 BigDecimal amount = new BigDecimal(params.get("fpx_txnAmount"));
-
-                // ✅ Reuse existing method
                 System.out.println("Amount to deposit: " + amount);
 
-                accountService.deposit(amount,txnId);
+                String[] split = orderNo.split("U");
+                if (split.length == 2) {
+                    String userPart = split[1].split("_")[0];
+                    Long userId = Long.parseLong(userPart);
+                    System.out.println("Extracted User ID: " + userId);
+
+                    accountService.depositToUser(amount, txnId, userId);
+                } else {
+                    System.out.println(Arrays.toString(split));
+                    System.out.println("Invalid order number format. Cannot extract user ID.");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Catch is called in payment controller");
+            System.out.println("Exception in payment controller");
             status = "failed";
         }
-        System.out.println("Redirect to frontend hit!!!!");
-        // Redirect to Angular payment-status page with status
+
+        // Redirect to frontend status page
         String redirectUrl = String.format("http://localhost:4200/payment-status?status=%s&orderNo=%s&transactionId=%s",
                 status, orderNo, txnId);
-
         response.sendRedirect(redirectUrl);
     }
 }
