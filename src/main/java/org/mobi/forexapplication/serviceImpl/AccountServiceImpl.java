@@ -41,7 +41,6 @@ public class AccountServiceImpl  implements AccountService {
     }
 
 
-
     @Override
     public BigDecimal getBalance() {
         User user = getCurrentUser();
@@ -114,21 +113,19 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     public void depositToUser(BigDecimal amount, String fpxTxnId, Long userId) {
 
-        // 1. ignore duplicates
         if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
             System.out.println("Duplicate FPX transaction ignored: " + fpxTxnId);
             return;
         }
 
-        // 2. load the user directly by id
+        // load the user directly by id
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        // 3. credit wallet
+        //credit wallet
         user.setDematBalance(user.getDematBalance().add(amount));
         userRepository.save(user);
 
-        // 4. record the transaction
         Transaction txn = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
         txn.setFpxTxnId(fpxTxnId);
         transactionRepository.save(txn);
@@ -150,6 +147,4 @@ public class AccountServiceImpl  implements AccountService {
 
         return true;
     }
-
-
 }
