@@ -26,8 +26,6 @@ public class AccountServiceImpl  implements AccountService {
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("Principal: " + principal);
-        System.out.println("Principal class: " + principal.getClass());
 
         String username;
         if (principal instanceof UserDetails) {
@@ -64,7 +62,6 @@ public class AccountServiceImpl  implements AccountService {
         Name = ((UserDetails) principal).getUsername();
 
         if((Objects.isNull(Name))){
-            System.out.println("I came Hreeeeeee");
             throw GlobalCustomException.UserNotFound("Name");
         }
         else{
@@ -84,7 +81,6 @@ public class AccountServiceImpl  implements AccountService {
     @Override
     public void deposit(BigDecimal amount) {
         User user=getCurrentUser();
-        System.out.println("Current user: " + user.getUsername());
 
         user.setDematBalance(user.getDematBalance().add(amount));
         userRepository.save(user);
