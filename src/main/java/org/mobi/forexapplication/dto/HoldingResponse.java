@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class HoldingResponse {
     private String stockName;
+    private String tickerSymbol;
     private int quantity;
     private BigDecimal avgBuyPrice;
     private BigDecimal currentPrice;
@@ -12,12 +13,21 @@ public class HoldingResponse {
     // Constructors
     public HoldingResponse() {}
 
-    public HoldingResponse(String stockName, int quantity, BigDecimal avgBuyPrice, BigDecimal currentPrice, BigDecimal currentValue) {
+    public HoldingResponse(String stockName, int quantity, BigDecimal avgBuyPrice, BigDecimal currentPrice, BigDecimal currentValue,String tickerSymbol) {
         this.stockName = stockName;
         this.quantity = quantity;
         this.avgBuyPrice = avgBuyPrice;
         this.currentPrice = currentPrice;
         this.currentValue = currentValue;
+        this.tickerSymbol=tickerSymbol;
+    }
+
+    public String getTickerSymbol() {
+        return tickerSymbol;
+    }
+
+    public void setTickerSymbol(String tickerSymbol) {
+        this.tickerSymbol = tickerSymbol;
     }
 
     public String getStockName() {

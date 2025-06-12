@@ -5,12 +5,18 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class NseIndiaService {
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
 
@@ -71,6 +77,28 @@ public class NseIndiaService {
     // API Methods
     public Mono<String> getEquityDetails(String symbol) {
         return safeRequest(String.format("/api/quote-equity?symbol=%s", symbol.toUpperCase()));
+    }
+
+    public BigDecimal fetchLastPrice(String symbol) {
+        String json = getEquityDetails(symbol)     // Mono<String>
+                .block(REQUEST_TIMEOUT);           // turn it into String
+
+        if (json == null) {
+            throw new RuntimeException("No response from NSE for " + symbol);
+        }
+        try {
+            JsonNode root       = mapper.readTree(json);
+            JsonNode lastPriceN = root.path("priceInfo").path("lastPrice");
+
+            if (!lastPriceN.isNumber()) {
+                throw new IllegalStateException(
+                        "priceInfo.lastPrice missing for " + symbol);
+            }
+            return lastPriceN.decimalValue();      // BigDecimal
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Failed to parse lastPrice for " + symbol, ex);
+        }
     }
 
     public Mono<String> getEquityIntradayDetails(String symbol) {

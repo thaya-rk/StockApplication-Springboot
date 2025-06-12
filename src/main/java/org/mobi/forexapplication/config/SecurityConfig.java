@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/nse/**").permitAll()
+                        .requestMatchers("/api/generate-checksum").permitAll()
                         .requestMatchers("/api/payment-status").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasRole("USER")

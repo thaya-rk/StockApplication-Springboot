@@ -1,17 +1,16 @@
 package org.mobi.forexapplication.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mobi.forexapplication.model.IndexEquityInfo;
 import org.mobi.forexapplication.service.NseIndiaService;
 import org.mobi.forexapplication.utils.IndexEquityInfoMapper;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/nse")
@@ -21,6 +20,7 @@ public class NseIndiaController {
     private NseIndiaService nseIndiaService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     //1. get stock info
     @GetMapping("/equity-details/{symbol}")

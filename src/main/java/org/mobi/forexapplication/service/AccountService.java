@@ -22,4 +22,6 @@ public interface AccountService {
 
     boolean withdraw(BigDecimal amount);
 
+    void recordFailedTransaction(String fpxTxnId, String orderNo, BigDecimal amount);
+
 }

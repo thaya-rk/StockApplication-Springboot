@@ -89,22 +89,6 @@ public class AccountServiceImpl  implements AccountService {
         transactionRepository.save(transaction);
     }
 
-//    @Override
-//    public void deposit(BigDecimal amount, String fpxTxnId) {
-//        if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
-//            System.out.println("Duplicate FPX transaction ignored: " + fpxTxnId);
-//            return;
-//        }
-//        User user = getCurrentUser();
-//        System.out.println("The deposited user is "+user);
-//
-//        user.setDematBalance(user.getDematBalance().add(amount));
-//        userRepository.save(user);
-//
-//        Transaction transaction = new Transaction(user, "DEPOSIT", amount, LocalDateTime.now());
-//        transaction.setFpxTxnId(fpxTxnId);
-//        transactionRepository.save(transaction);
-//    }
 
     @Override
     public void depositToUser(BigDecimal amount, String fpxTxnId, Long userId) {
@@ -128,6 +112,45 @@ public class AccountServiceImpl  implements AccountService {
 
         System.out.println("Deposited " + amount + " to user " + user.getUsername());
     }
+
+    @Override
+    public void recordFailedTransaction(String fpxTxnId, String orderNo, BigDecimal amount) {
+        if (transactionRepository.existsByFpxTxnId(fpxTxnId)) {
+            System.out.println("Duplicate failed FPX transaction ignored: " + fpxTxnId);
+            return;
+        }
+
+        try {
+            String[] split = orderNo.split("U");
+            if (split.length == 2) {
+                String userPart = split[1].split("_")[0];
+                Long userId = Long.parseLong(userPart);
+
+                User user = userRepository.findById(userId).orElse(null);
+                if (user == null) {
+                    System.err.println("User not found for failed transaction: " + userId);
+                    return;
+                }
+
+                Transaction txn = new Transaction();
+                txn.setUser(user);
+                txn.setType("DEPOSIT");
+                txn.setTotalAmount(amount);
+                txn.setStatus("FAILED");
+                txn.setFpxTxnId(fpxTxnId);
+                txn.setTransactionCharges(BigDecimal.ZERO);
+                txn.setTransactionDate(LocalDateTime.now());
+
+                transactionRepository.save(txn);
+                System.out.println("❌ Recorded failed transaction for user: " + user.getUsername());
+            } else {
+                System.err.println("❗ Invalid order number format: " + orderNo);
+            }
+        } catch (Exception e) {
+            System.err.println("❗ Error while recording failed transaction: " + e.getMessage());
+        }
+    }
+
 
     @Override
     public boolean withdraw(BigDecimal amount) {

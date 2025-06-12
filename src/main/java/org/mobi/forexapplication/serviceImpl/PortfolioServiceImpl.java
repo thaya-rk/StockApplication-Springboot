@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.mobi.forexapplication.dto.*;
 import org.mobi.forexapplication.model.*;
 import org.mobi.forexapplication.repository.*;
+import org.mobi.forexapplication.service.NseIndiaService;
 import org.mobi.forexapplication.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NseIndiaService nseIndiaService;
+
 
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
@@ -49,7 +53,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
         BigDecimal quantity = BigDecimal.valueOf(request.getQuantity());
-        BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
+        BigDecimal currentPrice = nseIndiaService.fetchLastPrice(stock.getTickerSymbol());
 
         BigDecimal totalPrice = currentPrice.multiply(quantity);
 
@@ -120,7 +124,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         Stock stock = stockRepository.findById(request.getStockId())
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
-        BigDecimal currentPrice = BigDecimal.valueOf(stock.getStockPrice());
+        BigDecimal currentPrice = nseIndiaService.fetchLastPrice(stock.getTickerSymbol());
         BigDecimal totalPrice = currentPrice.multiply(BigDecimal.valueOf(sellQty));
 
         TransactionChargesDTO chargesDTO = calculateTransactionCharges(userId, stock.getStockId(), sellQty);
@@ -162,8 +166,9 @@ public class PortfolioServiceImpl implements PortfolioService {
                             holding.getQuantity(),
                             holding.getAvgBuyPrice(),
                             currentPrice,
-                            currentValue
-                    );
+                            currentValue,
+                            stock.getTickerSymbol()
+                            );
                 })
                 .collect(Collectors.toList());
     }
