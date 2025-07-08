@@ -38,7 +38,7 @@ public class TwelveDataWebSocketClient {
             client = new WebSocketClient(uri) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
-                    System.out.println("✅ Connected to TwelveData");
+                    System.out.println("Connected to TwelveData");
 
                     // Subscribe to symbols
                     String subscribeMessage = "{ \"action\": \"subscribe\", \"params\": { \"symbols\": " + symbolsJson + " } }";
@@ -63,13 +63,13 @@ public class TwelveDataWebSocketClient {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-                    System.out.println("❌ Connection Closed: " + reason);
+                    System.out.println(" Connection Closed: " + reason);
                     cleanupAndReconnect();
                 }
 
                 @Override
                 public void onError(Exception ex) {
-                    System.err.println("⚠️ WebSocket Error: " + ex.getMessage());
+                    System.err.println("WebSocket Error: " + ex.getMessage());
                     cleanupAndReconnect();
                 }
             };

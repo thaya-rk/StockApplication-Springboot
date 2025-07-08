@@ -34,13 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        // 1. Try Authorization header first (optional)
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
         }
 
-        // 2. If no token found in header, check cookies
+        //If no token found in header, check cookies
         if (token == null) {
             if (request.getCookies() != null) {
                 for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/nse/**").permitAll()
@@ -38,14 +39,13 @@ public class SecurityConfig {
                            .requestMatchers("/api/portfolio/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable())  //Disable default form based login
-                .httpBasic(httpBasic -> httpBasic.disable()) // Disable Basic Auth
+                .formLogin(AbstractHttpConfigurer::disable)  //Disable default form based login
+                .httpBasic(AbstractHttpConfigurer::disable) // Disable Basic Auth
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // No session - JWT is stateless
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
 
         return http.build();
     }
@@ -54,8 +54,4 @@ public class SecurityConfig {
     {
         return new BCryptPasswordEncoder();
     }
-
-
-
-
 }

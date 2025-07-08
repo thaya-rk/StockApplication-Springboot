@@ -11,7 +11,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +48,8 @@ public class PaymentController {
         BigDecimal amount = new BigDecimal(params.getOrDefault("fpx_txnAmount", "0"));
         String status = "00".equals(debitAuthCode) ? "success" : "failed";
 
-        System.out.printf("➤ FPX Code: %s (%s)\n", debitAuthCode, debitAuthCodeString);
-        System.out.printf("➤ Status: %s, OrderNo: %s, TxnId: %s, Amount: %s\n", status, orderNo, txnId, amount);
+        System.out.printf("FPX Code: %s (%s)\n", debitAuthCode, debitAuthCodeString);
+        System.out.printf("Status: %s, OrderNo: %s, TxnId: %s, Amount: %s\n", status, orderNo, txnId, amount);
 
         if ("success".equals(status)) {
             try {
@@ -59,13 +58,12 @@ public class PaymentController {
                     String userPart = split[1].split("_")[0];
                     Long userId = Long.parseLong(userPart);
                     accountService.depositToUser(amount, txnId, userId);
-                } else {
+                }else {
                     System.err.println("❗ Invalid order number format: " + orderNo);
                     status = "failed";
                     accountService.recordFailedTransaction(txnId, orderNo, amount);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 System.out.println("❗ Deposit error, marking as failed.");
                 status = "failed";
                 accountService.recordFailedTransaction(txnId, orderNo, amount);

@@ -38,7 +38,6 @@ public class AccountServiceImpl  implements AccountService {
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
 
-
     @Override
     public BigDecimal getBalance() {
         User user = getCurrentUser();

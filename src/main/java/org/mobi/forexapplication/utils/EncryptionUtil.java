@@ -1,5 +1,8 @@
 package org.mobi.forexapplication.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -13,6 +16,8 @@ public class EncryptionUtil {
 
     private static final int ITERATION_COUNT = 65536;
     private static final int CIPHER_KEY_LEN = 256;
+    private static final Logger logger = LoggerFactory.getLogger(EncryptionUtil.class);
+
 
     public static String encryptPayload(String minifiedString, String param1, String param2) {
         try {
@@ -36,7 +41,7 @@ public class EncryptionUtil {
 
             return Base64.getEncoder().encodeToString(encryptedData);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Something went wrong..");
             return null;
         }
     }

@@ -1,6 +1,7 @@
 package org.mobi.forexapplication.service;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -56,7 +57,7 @@ public class NseIndiaService {
                 .header(HttpHeaders.COOKIE, cookies.get())
                 .header(HttpHeaders.USER_AGENT, userAgent.get())
                 .retrieve()
-                .onStatus(status -> status.isError(),
+                .onStatus(HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class).flatMap(body -> {
                             System.err.println("Error from NSE: " + body);
                             return Mono.error(new RuntimeException("NSE API Error: " + body));
